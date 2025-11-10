@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔍 HTTP RIP</h1>
+      <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
+    </div>
+    
+    <div class="summary">
+      <div class="stat">
+        <span class="label">Total:</span>
+        <span id="total-count" class="value">0</span>
+      </div>
+      <div class="stat error">
+        <span class="label">HTTP Errors:</span>
+        <span id="error-count" class="value">0</span>
+      </div>
+      <div class="stat dns-error">
+        <span class="label">DNS Errors:</span>
+        <span id="dns-error-count" class="value">0</span>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>Acceptable Codes:</strong>
+      <span id="acceptable-codes"></span>
+    </div>
+
+    <div class="filters">
+      <label>
+        <input type="checkbox" id="filter-errors" checked>
+        Show only HTTP errors (non-acceptable codes)
+      </label>
+      <label>
+        <input type="checkbox" id="filter-dns-errors" checked>
+        Show only DNS errors (invalid domains)
+      </label>
+    </div>
+    
+    <div id="requests-container"></div>
+    
+    <div class="footer">
+      <button id="clear-btn">Clear</button>
+      <button id="export-btn">Export CSV</button>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

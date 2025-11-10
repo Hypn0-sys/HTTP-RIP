@@ -1,0 +1,35 @@
+{
+  "manifest_version": 2,
+  "name": "HTTP RIP - Request Inspector & Protector",
+  "version": "1.1",
+  "description": "Monitor HTTP requests and verify DNS resolution. Track errors, invalid domains, and export detailed reports.",
+  
+  "permissions": [
+    "webRequest",
+    "tabs",
+    "<all_urls>",
+    "storage"
+  ],
+  
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "HTTP RIP",
+    "default_icon": {
+      "48": "icon.png"
+    }
+  },
+  
+  "icons": {
+    "48": "icon.png"
+  },
+  
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}
