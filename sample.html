@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP RIP Extension - Demo Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            padding: 30px;
+            border-left: 5px solid #667eea;
+            margin: 30px;
+            border-radius: 8px;
+        }
+
+        .instructions h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .section {
+            padding: 30px;
+            margin: 30px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-http {
+            border-left: 5px solid #ff6b6b;
+        }
+
+        .section-dns {
+            border-left: 5px solid #ffa502;
+        }
+
+        .section-valid {
+            border-left: 5px solid #4cd137;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-error {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .badge-dns {
+            background: #ffa502;
+            color: white;
+        }
+
+        .badge-success {
+            background: #4cd137;
+            color: white;
+        }
+
+        .resource-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            border-left: 4px solid #ddd;
+        }
+
+        .resource-item h3 {
+            color: #555;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .resource-item code {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #c7254e;
+            font-size: 0.9em;
+        }
+
+        .resource-item p {
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 30px;
+        }
+
+        .alert strong {
+            font-weight: bold;
+        }
+
+        .hidden-resources {
+            display: none;
+        }
+    </style>
+
+    <!-- Valid Resources (for comparison) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- HTTP 404 Errors: Non-existent CSS files from real CDNs -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fake-404-stylesheet@1.0.0/missing.css">
+    
+    <!-- DNS Errors: Invalid domain CSS files -->
+    <link rel="stylesheet" href="https://this-domain-absolutely-does-not-exist.com/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 HTTP RIP Extension Demo</h1>
+            <p>Test page to demonstrate request error detection</p>
+        </div>
+
+        <div class="alert">
+            <strong>⚡ Instructions:</strong> After loading this page, open the HTTP RIP extension popup to see all detected errors (HTTP errors, DNS failures, and valid requests).
+        </div>
+
+        <div class="instructions">
+            <h2>📋 How to Use This Demo</h2>
+            <ol>
+                <li>This page will automatically trigger various types of network errors</li>
+                <li>Click on the HTTP RIP extension icon in your browser toolbar</li>
+                <li>The popup will display all detected errors categorized by type:
+                    <ul style="margin-top: 10px;">
+                        <li><strong>HTTP Errors:</strong> 404 Not Found and other HTTP status codes</li>
+                        <li><strong>DNS Errors:</strong> Failed domain name resolutions</li>
+                        <li><strong>Valid Requests:</strong> Successfully loaded resources</li>
+                    </ul>
+                </li>
+                <li>You can filter errors by type and see detailed information about each failed request</li>
+                <li>Configure detection settings in the extension options page</li>
+            </ol>
+        </div>
+
+        <div class="section section-http">
+            <h2><span class="badge badge-error">HTTP Errors</span> 404 Not Found Resources</h2>
+            
+            <div class="resource-item">
+                <h3>📄 Missing JavaScript Files</h3>
+                <code>https://cdn.jsdelivr.net/npm/fake-404-stylesheet@1.0.0/missing.css</code>
+                <p>This JavaScript file does not exist on real CDNs and will trigger 404 errors.</p>
+            </div>
+        </div>
+
+        <div class="section section-dns">
+            <h2><span class="badge badge-dns">DNS Errors</span> Invalid Domain Resources</h2>
+            
+            <div class="resource-item">
+                <h3>🌐 Fake Domain Images</h3>
+                <code>https://this-domain-absolutely-does-not-exist.com/style.css</code>
+                <p>Resources from completely invalid domains that will fail DNS resolution.</p>
+            </div>
+        </div>
+
+        <div class="section section-valid">
+            <h2><span class="badge badge-success">Valid Requests</span> Successfully Loaded Resources</h2>
+            
+            <div class="resource-item">
+                <h3>✅ Font Awesome CDN</h3>
+                <code>https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css</code>
+                <p>A valid CSS library loaded successfully from a real CDN for comparison.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>HTTP RIP Extension Demo Page | Open the extension popup to view detected errors</p>
+        </div>
+    </div>
+
+
+</body>
+</html>

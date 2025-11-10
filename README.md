@@ -36,7 +36,7 @@ HTTP RIP is a powerful Firefox extension that captures and analyzes all HTTP req
 
 ## 📸 Screenshots
 
-*Screenshots coming soon*
+![alt text](screen1.png)
 
 ## 🚀 Installation
 

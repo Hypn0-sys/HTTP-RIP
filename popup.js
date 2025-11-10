@@ -79,9 +79,17 @@ function displayRequests() {
   let requests = allRequests;
   
   // Filter if necessary
-  if (filterErrorsOnly) {
+  if (filterErrorsOnly && filterDnsErrorsOnly) {
+    // Both filters: show HTTP errors OR DNS errors
+    requests = requests.filter(r =>
+      !isAcceptableStatus(r.status, r.statusText) ||
+      r.dnsStatus === 'invalid' || r.dnsStatus === 'error'
+    );
+  } else if (filterErrorsOnly) {
+    // Only HTTP filter
     requests = requests.filter(r => !isAcceptableStatus(r.status, r.statusText));
   } else if (filterDnsErrorsOnly) {
+    // Only DNS filter
     requests = requests.filter(r =>
       r.dnsStatus === 'invalid' || r.dnsStatus === 'error'
     );
@@ -89,7 +97,9 @@ function displayRequests() {
   
   if (requests.length === 0) {
     let message = 'No requests to display';
-    if (filterErrorsOnly) {
+    if (filterErrorsOnly && filterDnsErrorsOnly) {
+      message = '✅ No HTTP or DNS errors detected!';
+    } else if (filterErrorsOnly) {
       message = '✅ No HTTP errors detected!';
     } else if (filterDnsErrorsOnly) {
       message = '✅ No DNS errors detected!';
@@ -151,9 +161,17 @@ function escapeHtml(text) {
 function exportToCSV() {
   let requests = allRequests;
   
-  if (filterErrorsOnly) {
+  if (filterErrorsOnly && filterDnsErrorsOnly) {
+    // Both filters: show HTTP errors OR DNS errors
+    requests = requests.filter(r =>
+      !isAcceptableStatus(r.status, r.statusText) ||
+      r.dnsStatus === 'invalid' || r.dnsStatus === 'error'
+    );
+  } else if (filterErrorsOnly) {
+    // Only HTTP filter
     requests = requests.filter(r => !isAcceptableStatus(r.status, r.statusText));
   } else if (filterDnsErrorsOnly) {
+    // Only DNS filter
     requests = requests.filter(r =>
       r.dnsStatus === 'invalid' || r.dnsStatus === 'error'
     );
