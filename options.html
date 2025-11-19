@@ -1,142 +1,221 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <style>
+    :root {
+      /* Light Theme Colors */
+      --bg-color: #ffffff;
+      --text-color: #333333;
+      --text-secondary: #666666;
+      --border-color: #dddddd;
+      --header-bg: #f5f5f5;
+      --accent-color: #2196f3;
+      --accent-hover: #1976d2;
+      --success-color: #4caf50;
+      --error-color: #f44336;
+      --warning-color: #ff9800;
+
+      /* Component Colors */
+      --card-bg: #ffffff;
+      --card-hover: #f9f9f9;
+      --info-bg: #e3f2fd;
+      --info-border: #2196f3;
+      --info-text: #0d47a1;
+      --filter-bg: #fff3cd;
+
+      /* Spacing */
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+
+      /* Transitions */
+      --transition-speed: 0.2s;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1e1e1e;
+      --text-color: #e0e0e0;
+      --text-secondary: #aaaaaa;
+      --border-color: #333333;
+      --header-bg: #2d2d2d;
+      --accent-color: #64b5f6;
+      --accent-hover: #42a5f5;
+
+      --card-bg: #1e1e1e;
+      --card-hover: #2d2d2d;
+      --info-bg: #1a3f5c;
+      --info-border: #64b5f6;
+      --info-text: #e3f2fd;
+      --filter-bg: #3e3725;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       padding: 20px;
       max-width: 600px;
       margin: 0 auto;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color var(--transition-speed), color var(--transition-speed);
     }
-    
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
     h1 {
       font-size: 24px;
-      margin-bottom: 10px;
-      color: #333;
+      margin: 0;
+      color: var(--text-color);
     }
-    
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      transition: background var(--transition-speed);
+      color: var(--text-color);
+    }
+
+    .icon-btn:hover {
+      background: var(--header-bg);
+    }
+
     .description {
-      color: #666;
+      color: var(--text-secondary);
       margin-bottom: 30px;
       line-height: 1.5;
     }
-    
+
     .section {
-      background: #f5f5f5;
+      background: var(--header-bg);
       padding: 20px;
       border-radius: 8px;
       margin-bottom: 20px;
+      border: 1px solid var(--border-color);
     }
-    
+
     h2 {
       font-size: 18px;
       margin-bottom: 15px;
-      color: #444;
+      color: var(--text-color);
     }
-    
+
     .preset-codes {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 20px;
     }
-    
+
     .code-checkbox {
       display: flex;
       align-items: center;
       gap: 5px;
       padding: 8px 12px;
-      background: white;
-      border: 2px solid #ddd;
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s;
     }
-    
+
     .code-checkbox:hover {
-      border-color: #2196f3;
-      background: #f0f8ff;
+      border-color: var(--accent-color);
+      background: var(--card-hover);
     }
-    
-    .code-checkbox input:checked + label {
+
+    .code-checkbox input:checked+label {
       font-weight: bold;
-      color: #2196f3;
+      color: var(--accent-color);
     }
-    
+
     .code-checkbox input {
       cursor: pointer;
     }
-    
+
     .code-checkbox label {
       cursor: pointer;
       user-select: none;
       display: flex;
       align-items: center;
       gap: 5px;
+      color: var(--text-color);
     }
-    
+
     .code-description {
       font-size: 11px;
-      color: #666;
+      color: var(--text-secondary);
     }
-    
+
     .custom-input {
       margin-top: 15px;
       padding: 15px;
-      background: white;
+      background: var(--card-bg);
       border-radius: 6px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border-color);
     }
-    
+
     .custom-input label {
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
-      color: #444;
+      color: var(--text-color);
     }
-    
-    .custom-input input {
+
+    .custom-input input,
+    .custom-input select {
       width: 100%;
       padding: 8px 12px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border-color);
       border-radius: 4px;
       font-size: 14px;
+      background: var(--bg-color);
+      color: var(--text-color);
     }
-    
+
     .custom-input .help {
       margin-top: 5px;
       font-size: 12px;
-      color: #666;
+      color: var(--text-secondary);
     }
-    
+
     .current-codes {
       margin-top: 15px;
       padding: 12px;
-      background: #e3f2fd;
-      border-left: 3px solid #2196f3;
+      background: var(--info-bg);
+      border-left: 3px solid var(--info-border);
       border-radius: 4px;
+      color: var(--info-text);
     }
-    
+
     .current-codes strong {
-      color: #0d47a1;
+      color: var(--info-text);
     }
-    
+
     .current-codes-list {
       margin-top: 8px;
       font-family: monospace;
       font-size: 14px;
       font-weight: 600;
-      color: #1565c0;
+      color: var(--info-text);
     }
-    
+
     .actions {
       display: flex;
       gap: 10px;
       justify-content: flex-end;
       margin-top: 20px;
     }
-    
+
     button {
       padding: 10px 20px;
       border: none;
@@ -146,55 +225,74 @@
       font-weight: 500;
       transition: background 0.2s;
     }
-    
+
     #save-btn {
-      background: #4caf50;
+      background: var(--success-color);
       color: white;
     }
-    
+
     #save-btn:hover {
-      background: #45a049;
+      opacity: 0.9;
     }
-    
+
     #reset-btn {
-      background: #f44336;
+      background: var(--error-color);
       color: white;
     }
-    
+
     #reset-btn:hover {
-      background: #da190b;
+      opacity: 0.9;
     }
-    
+
     .message {
       padding: 12px;
       border-radius: 4px;
       margin-top: 15px;
       display: none;
     }
-    
+
     .message.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background: var(--dns-valid-bg);
+      color: var(--dns-valid-text);
+      border: 1px solid var(--dns-valid-border);
     }
-    
+
     .message.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
+      background: var(--dns-invalid-bg);
+      color: var(--dns-invalid-text);
+      border: 1px solid var(--dns-invalid-border);
     }
   </style>
 </head>
+
 <body>
-  <h1>⚙️ HTTP Status Monitor Configuration</h1>
+  <div class="header-container">
+    <h1>⚙️ HTTP Status Monitor Configuration</h1>
+    <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
+  </div>
   <p class="description">
     Define which HTTP status codes are considered acceptable.
     Requests returning other codes will be marked as errors.
   </p>
-  
+
+  <div class="section">
+    <h2>DNS Configuration</h2>
+    <div class="custom-input" style="margin-top: 0;">
+      <label for="dns-provider">DNS Provider:</label>
+      <select id="dns-provider">
+        <option value="google">Google Public DNS (Default)</option>
+        <option value="cloudflare">Cloudflare (1.1.1.1)</option>
+        <option value="quad9">Quad9 (Security)</option>
+      </select>
+      <div class="help">
+        Select which DNS-over-HTTPS provider to use for verification.
+      </div>
+    </div>
+  </div>
+
   <div class="section">
     <h2>Acceptable Status Codes</h2>
-    
+
     <div class="preset-codes" id="preset-codes">
       <div class="code-checkbox">
         <input type="checkbox" id="code-200" value="200">
@@ -203,7 +301,7 @@
           <span class="code-description">(OK)</span>
         </label>
       </div>
-      
+
       <div class="code-checkbox">
         <input type="checkbox" id="code-201" value="201">
         <label for="code-201">
@@ -211,7 +309,7 @@
           <span class="code-description">(Created)</span>
         </label>
       </div>
-      
+
       <div class="code-checkbox">
         <input type="checkbox" id="code-202" value="202">
         <label for="code-202">
@@ -219,7 +317,7 @@
           <span class="code-description">(Accepted)</span>
         </label>
       </div>
-      
+
       <div class="code-checkbox">
         <input type="checkbox" id="code-204" value="204">
         <label for="code-204">
@@ -227,7 +325,7 @@
           <span class="code-description">(No Content)</span>
         </label>
       </div>
-      
+
       <div class="code-checkbox">
         <input type="checkbox" id="code-206" value="206">
         <label for="code-206">
@@ -235,7 +333,7 @@
           <span class="code-description">(Partial Content)</span>
         </label>
       </div>
-      
+
       <div class="code-checkbox">
         <input type="checkbox" id="code-301" value="301">
         <label for="code-301">
@@ -243,7 +341,7 @@
           <span class="code-description">(Moved Permanently)</span>
         </label>
       </div>
-      
+
       <div class="code-checkbox">
         <input type="checkbox" id="code-302" value="302">
         <label for="code-302">
@@ -251,7 +349,7 @@
           <span class="code-description">(Found)</span>
         </label>
       </div>
-      
+
       <div class="code-checkbox">
         <input type="checkbox" id="code-304" value="304">
         <label for="code-304">
@@ -260,32 +358,29 @@
         </label>
       </div>
     </div>
-    
+
     <div class="custom-input">
       <label for="custom-codes">Custom Codes:</label>
-      <input
-        type="text"
-        id="custom-codes"
-        placeholder="e.g., 202, 207, 226"
-      >
+      <input type="text" id="custom-codes" placeholder="e.g., 202, 207, 226">
       <div class="help">
         Enter additional codes separated by commas
       </div>
     </div>
-    
+
     <div class="current-codes">
       <strong>Currently Acceptable Codes:</strong>
       <div class="current-codes-list" id="current-codes-display"></div>
     </div>
   </div>
-  
+
   <div class="actions">
     <button id="reset-btn">Reset</button>
     <button id="save-btn">Save</button>
   </div>
-  
+
   <div id="message" class="message"></div>
-  
+
   <script src="options.js"></script>
 </body>
+
 </html>

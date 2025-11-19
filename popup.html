@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <div class="container">
     <div class="header">
       <h1>🔍 HTTP RIP</h1>
-      <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
+        <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
+      </div>
     </div>
-    
+
     <div class="summary">
       <div class="stat">
         <span class="label">Total:</span>
@@ -41,15 +46,19 @@
         Show only DNS errors (invalid domains)
       </label>
     </div>
-    
+
     <div id="requests-container"></div>
-    
+
     <div class="footer">
       <button id="clear-btn">Clear</button>
-      <button id="export-btn">Export CSV</button>
+      <div class="button-group">
+        <button id="export-btn" class="secondary-btn">Export CSV</button>
+        <button id="export-har-btn" class="secondary-btn">Export HAR</button>
+      </div>
     </div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
+
 </html>

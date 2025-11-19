@@ -1,28 +1,42 @@
 // Default acceptable HTTP codes
 let acceptableCodes = [200, 204, 304];
+let dnsProvider = 'google'; // Default provider
 
 // DNS cache to avoid repeated requests
 let dnsCache = {};
 const DNS_CACHE_TTL = 300000; // 5 minutes en millisecondes
 
-// Load acceptable codes from storage
-browser.storage.local.get('acceptableCodes').then((result) => {
+// Load settings from storage
+browser.storage.local.get(['acceptableCodes', 'dnsProvider']).then((result) => {
   if (result.acceptableCodes) {
     acceptableCodes = result.acceptableCodes;
   } else {
-    // Save default values
     browser.storage.local.set({ acceptableCodes: acceptableCodes });
+  }
+
+  if (result.dnsProvider) {
+    dnsProvider = result.dnsProvider;
+  } else {
+    browser.storage.local.set({ dnsProvider: dnsProvider });
   }
 });
 
 // Listen for configuration changes
 browser.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes.acceptableCodes) {
-    acceptableCodes = changes.acceptableCodes.newValue;
-    // Recalculate errors for all tabs
-    Object.keys(requestsByTab).forEach(tabId => {
-      recalculateErrors(parseInt(tabId));
-    });
+  if (area === 'local') {
+    if (changes.acceptableCodes) {
+      acceptableCodes = changes.acceptableCodes.newValue;
+      // Recalculate errors for all tabs
+      Object.keys(requestsByTab).forEach(tabId => {
+        recalculateErrors(parseInt(tabId));
+      });
+    }
+
+    if (changes.dnsProvider) {
+      dnsProvider = changes.dnsProvider.newValue;
+      // Clear cache when provider changes
+      dnsCache = {};
+    }
   }
 });
 
@@ -44,25 +58,25 @@ function recalculateErrors(tabId) {
     updateBadge(tabId);
     return;
   }
-  
+
   // Count HTTP errors (non-acceptable codes)
   errorCountByTab[tabId] = requestsByTab[tabId].filter(r =>
     r.status !== 'pending' &&
     r.status !== 'ERROR' &&
     !isAcceptableCode(r.status)
   ).length;
-  
+
   // Add network errors (except NS_BINDING_ABORTED)
   errorCountByTab[tabId] += requestsByTab[tabId].filter(r =>
     r.status === 'ERROR' && r.statusText !== 'NS_BINDING_ABORTED'
   ).length;
-  
+
   // Count DNS errors (except for cancelled requests)
   dnsErrorCountByTab[tabId] = requestsByTab[tabId].filter(r =>
     (r.dnsStatus === 'invalid' || r.dnsStatus === 'error') &&
     (r.status !== 'ERROR' || r.statusText !== 'NS_BINDING_ABORTED')
   ).length;
-  
+
   updateBadge(tabId);
 }
 
@@ -89,25 +103,37 @@ async function checkDNS(domain) {
   if (isDNSCacheValid(domain)) {
     return dnsCache[domain];
   }
-  
+
   try {
-    const response = await fetch(
-      `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=A`,
-      {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      }
-    );
-    
+    let apiUrl = '';
+
+    switch (dnsProvider) {
+      case 'cloudflare':
+        apiUrl = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
+        break;
+      case 'quad9':
+        apiUrl = `https://dns.quad9.net:5053/dns-query?name=${encodeURIComponent(domain)}&type=A`;
+        break;
+      case 'google':
+      default:
+        apiUrl = `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=A`;
+        break;
+    }
+
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: { 'Accept': 'application/dns-json' }
+    });
+
     if (!response.ok) {
       throw new Error(`DNS API error: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
+
     // Determine if domain exists
     const exists = data.Status === 0 && data.Answer && data.Answer.length > 0;
-    
+
     const result = {
       exists: exists,
       status: exists ? 'valid' : 'invalid',
@@ -115,10 +141,10 @@ async function checkDNS(domain) {
       timestamp: Date.now(),
       error: data.Status !== 0 ? `DNS Status: ${data.Status}` : null
     };
-    
+
     // Cache result
     dnsCache[domain] = result;
-    
+
     return result;
   } catch (error) {
     const result = {
@@ -127,10 +153,10 @@ async function checkDNS(domain) {
       error: error.message,
       timestamp: Date.now()
     };
-    
+
     // Cache even errors (with shorter TTL)
     dnsCache[domain] = result;
-    
+
     return result;
   }
 }
@@ -156,13 +182,13 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
 browser.webRequest.onBeforeRequest.addListener(
   (details) => {
     if (details.tabId === -1) return;
-    
+
     if (!requestsByTab[details.tabId]) {
       requestsByTab[details.tabId] = [];
     }
-    
+
     const domain = extractDomain(details.url);
-    
+
     const request = {
       id: details.requestId,
       url: details.url,
@@ -170,19 +196,31 @@ browser.webRequest.onBeforeRequest.addListener(
       method: details.method,
       type: details.type,
       timestamp: new Date(details.timeStamp).toLocaleTimeString(),
+      timing: {
+        start: details.timeStamp,
+        responseStart: 0,
+        end: 0,
+        duration: 0
+      },
       status: 'pending',
       dnsStatus: 'checking',
       dnsError: null
     };
-    
+
     requestsByTab[details.tabId].push(request);
-    
+
+    // Memory optimization: Keep only last 1000 requests
+    if (requestsByTab[details.tabId].length > 1000) {
+      requestsByTab[details.tabId] = requestsByTab[details.tabId].slice(-1000);
+    }
+
     // Verify DNS asynchronously
+
     if (domain) {
       checkDNS(domain).then(dnsResult => {
         request.dnsStatus = dnsResult.status;
         request.dnsError = dnsResult.error;
-        
+
         // Recalculate errors instead of incrementing
         recalculateErrors(details.tabId);
       }).catch(err => {
@@ -195,18 +233,38 @@ browser.webRequest.onBeforeRequest.addListener(
   { urls: ["<all_urls>"] }
 );
 
+// Capture response started (TTFB)
+browser.webRequest.onResponseStarted.addListener(
+  (details) => {
+    if (details.tabId === -1) return;
+    if (!requestsByTab[details.tabId]) return;
+
+    let request = requestsByTab[details.tabId].find(r => r.id === details.requestId);
+    if (request) {
+      request.timing.responseStart = details.timeStamp;
+    }
+  },
+  { urls: ["<all_urls>"] }
+);
+
 // Capture completed requests
 browser.webRequest.onCompleted.addListener(
   (details) => {
     if (details.tabId === -1) return;
-    
+
     if (!requestsByTab[details.tabId]) return;
-    
+
     let request = requestsByTab[details.tabId].find(r => r.id === details.requestId);
     if (request) {
       request.status = details.statusCode;
       request.statusText = getStatusText(details.statusCode);
-      
+
+      // Calculate timing
+      if (request.timing) {
+        request.timing.end = details.timeStamp;
+        request.timing.duration = Math.round(details.timeStamp - request.timing.start);
+      }
+
       // Recalculate errors instead of incrementing
       recalculateErrors(details.tabId);
     }
@@ -218,17 +276,17 @@ browser.webRequest.onCompleted.addListener(
 browser.webRequest.onErrorOccurred.addListener(
   (details) => {
     if (details.tabId === -1) return;
-    
+
     if (!requestsByTab[details.tabId]) return;
-    
+
     // Ignore NS_BINDING_ABORTED (request cancelled by user)
     if (details.error === 'NS_BINDING_ABORTED') return;
-    
+
     let request = requestsByTab[details.tabId].find(r => r.id === details.requestId);
     if (request) {
       request.status = 'ERROR';
       request.statusText = details.error;
-      
+
       // Recalculate errors instead of incrementing
       recalculateErrors(details.tabId);
     }
@@ -241,18 +299,18 @@ function updateBadge(tabId) {
   const httpErrors = errorCountByTab[tabId] || 0;
   const dnsErrors = dnsErrorCountByTab[tabId] || 0;
   const totalErrors = httpErrors + dnsErrors;
-  
+
   if (totalErrors > 0) {
-    browser.browserAction.setBadgeText({
+    browser.action.setBadgeText({
       text: totalErrors.toString(),
       tabId: tabId
     });
-    browser.browserAction.setBadgeBackgroundColor({
+    browser.action.setBadgeBackgroundColor({
       color: '#FF0000',
       tabId: tabId
     });
   } else {
-    browser.browserAction.setBadgeText({
+    browser.action.setBadgeText({
       text: '',
       tabId: tabId
     });
@@ -273,7 +331,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
-  
+
   if (message.action === 'clearData') {
     browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
       const tabId = tabs[0].id;
@@ -309,3 +367,4 @@ function getStatusText(code) {
   };
   return statusTexts[code] || 'Unknown';
 }
+
